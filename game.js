@@ -485,13 +485,13 @@
         urls: ['music/gaia-tuvan.mp3']
       });
       sound2 = new Howl({
-        urls: ['music/grizmatik.mp3']
-      });
-      sound3 = new Howl({
         urls: ['music/future.mp3']
       });
-      sound4 = new Howl({
+      sound3 = new Howl({
         urls: ['music/skrillex.mp3']
+      });
+      sound4 = new Howl({
+        urls: ['music/grizmatik.mp3']
       });
       sound5 = new Howl({
         urls: ['music/numanuma.mp3']
