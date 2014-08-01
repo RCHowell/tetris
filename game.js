@@ -213,9 +213,19 @@
       hide('start');
       //reset();
       playing = true;
-      sound1.play();
       bg();
       html('rows', rows);
+      if(level2){
+        sound2.play();
+      }else if(level3){
+        sound3.play();
+      }else if(level4){
+        sound4.play();
+      }else if(level5){
+        sound5.play();
+      }else{
+        sound1.play();
+      }
     };
     function pause(){
       show('start');
@@ -231,6 +241,8 @@
     function toggleGame(){
       if(playing){
         pause();
+      }else if(get('rows').html == "Game Over"){
+        reset();
       }else{
         play();
       }
@@ -257,6 +269,11 @@
       clearScore();
       setCurrentPiece(next);
       setNextPiece();
+      music();
+      level2  = false;
+      level3  = false;
+      level4  = false;
+      level5  = false;
     };
 
     function update(idt) {
@@ -439,6 +456,7 @@
           get('right').style.backgroundColor = color;
           sound2.fadeOut(0,500);
           sound3.play();
+          level2 = false;
           level3 = true;
           flash();
         }else if(rows >= 30 && level4 == false){
@@ -447,6 +465,7 @@
           get('right').style.backgroundColor = color;
           sound3.fadeOut(0,500);
           sound4.play();
+          level3 = false;
           level4 = true;
           flash();
         }else if(rows >= 40 && level5 == false){
@@ -455,6 +474,7 @@
           get('right').style.backgroundColor = color;
           sound4.fadeOut(0,500);
           sound5.play();
+          level4 = false;
           level5 = true;
           flash();
         }else if(rows >= 50){
