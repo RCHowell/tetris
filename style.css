@@ -1,0 +1,184 @@
+body{
+    font-family: Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+#tetris{
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+#game{
+    position: absolute;
+    top: 0;
+    left: 0px;
+    bottom: 0;
+    right: 0;
+    min-height: 500px;
+    text-align: center;
+}
+#rows-container{
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    margin: 0 0 0 -25vh;
+    text-align: center;
+    padding: 0;
+    height: 120px;
+    width: 50vh;
+    z-index: 4;
+    background-color: rgba(255,255,255,0.3);
+    transition: border 0.5s;
+}
+#rows{
+    font-weight: 900 !important;
+    font-family: 'Lato', sans-serif;
+    color: #fff;
+    line-height: 120px;
+    font-size: 3.5em;
+    padding: 0;
+    margin: 0;
+}
+#canvas{
+    position: absolute;
+    padding: 0;
+    margin: 0 0 0 -25vh;
+    left: 50%;
+    background-color: transparent;
+    height: 100vh;
+    width: 50vh;
+    z-index: 3;
+    border: none;
+    transition: transform 0.3s;
+}
+.overlay{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+#color-overlay{
+    transition: background-color 0.2s;
+    background-color: #000;
+    opacity: 1;
+    z-index: 1;
+}
+#gradient-overlay{
+    
+    background: -moz-linear-gradient(top,  rgba(0,0,0,0) 0%, rgba(0,0,0,0) 14%, rgba(0,0,0,0) 77%, rgba(0,0,0,0.65) 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(0,0,0,0)), color-stop(14%,rgba(0,0,0,0)), color-stop(77%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,0.65))); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(top,  rgba(0,0,0,0) 0%,rgba(0,0,0,0) 14%,rgba(0,0,0,0) 77%,rgba(0,0,0,0.65) 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(top,  rgba(0,0,0,0) 0%,rgba(0,0,0,0) 14%,rgba(0,0,0,0) 77%,rgba(0,0,0,0.65) 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(top,  rgba(0,0,0,0) 0%,rgba(0,0,0,0) 14%,rgba(0,0,0,0) 77%,rgba(0,0,0,0.65) 100%); /* IE10+ */
+background: linear-gradient(to bottom,  rgba(0,0,0,0) 0%,rgba(0,0,0,0) 14%,rgba(0,0,0,0) 77%,rgba(0,0,0,0.65) 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#a6000000',GradientType=0 ); /* IE6-9 */
+    z-index: 2;
+    opacity: 0;
+}
+#menu{
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    background-color: #fff;
+    display: none;
+}
+#menu p{
+    margin: 0.5em 0;
+    text-align: center;
+}
+#menu p a{
+    text-decoration: none;
+    color: black;
+}
+#upcoming{
+    display: block;
+    margin: 0 auto;
+    background-color: #fff;
+    width: 200px;
+    height: 200px;
+}
+#score{
+    font-weight: bold;
+    vertical-align: middle;
+}
+#rows{
+    font-weight: bold;
+    vertical-align: middle;
+}
+#no-audio{
+    margin: 28px auto;
+    padding: 0;
+    width: 100px;
+    height: 100px;
+    background-image: url(mute.png);
+    background-size: cover;
+    cursor: pointer;
+}
+#stats{
+    display: none;
+    position: absolute;
+    bottom: 0em;
+    right: 1em;
+}
+#game-style{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 0;
+    z-index: 4;
+}
+#game-style section{
+    padding: 0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background-color: #000;
+}
+.level-fill{
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 0;
+    background-color: #fff;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.2s, height 0.5s;
+}
+#left{
+    border-right: 4px solid #fff;
+    right: 50%;
+    left: 0;
+    margin: 0 25vh 0 0;
+}
+#right{
+    border-left: 4px solid #fff;
+    left: 50%;
+    right: 0;
+    margin: 0 0 0 25vh;
+}
+/*  @media screen and (min-width: 400px) and (min-height: 400px){
+        #tetris { font-size: 1.00em; width: 350px; }
+        #menu { width: 150px; height: 300px; }
+        #upcoming { width:  75px; height:  75px; }
+        #canvas { width: 150px; height: 300px; }
+    } 15px chunks 
+    @media screen and (min-width: 500px) and (min-height: 500px)  { #tetris { font-size: 1.25em; width: 450px; } #menu { width: 200px; height: 400px; } #upcoming { width: 100px; height: 100px; } #canvas { width: 200px; height: 400px; } } 20px chunks
+    @media screen and (min-width: 600px) and (min-height: 600px)  { #tetris { font-size: 1.50em; width: 550px; } #menu { width: 250px; height: 500px; } #upcoming { width: 125px; height: 125px; } #canvas { width: 250px; height: 500px; } } 25px chunks
+    @media screen and (min-width: 700px) and (min-height: 700px)  { #tetris { font-size: 1.75em; width: 650px; } #menu { width: 300px; height: 600px; } #upcoming { width: 150px; height: 150px; } #canvas { width: 300px; height: 600px; } } 30px chunks
+    @media screen and (min-width: 800px) and (min-height: 800px)  { #tetris { font-size: 2.00em; width: 750px; } #menu { width: 350px; height: 700px; } #upcoming { width: 175px; height: 175px; } #canvas { width: 350px; height: 700px; } } 35px chunks
+    @media screen and (min-width: 900px) and (min-height: 900px)  { #tetris { font-size: 2.25em; width: 850px; } #menu { width: 400px; height: 800px; } #upcoming { width: 200px; height: 200px; } #canvas { width: 400px; height: 800px; } } 40px chunks
+*/
+
+
+
+
