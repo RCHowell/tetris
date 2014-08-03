@@ -681,7 +681,7 @@
         var expires = new Date();
         var hscore = get('score').innerHTML;
         expires.setFullYear(expires.getFullYear() + 1);
-        document.cookie = "HIGHSCORE=" + vscore + "; expires = " + expires.toGMTString();
+        document.cookie = "HIGHSCORE=" + commas(vscore) + "; expires = " + expires.toGMTString();
       }
     }
 
