@@ -5,7 +5,7 @@
     //-------------------------------------------------------------------------
 
     function get(id)        { return document.getElementById(id);  };
-    function hide(id)       { get(id).style.visibility = 'hidden'; };
+    function hide(id)       { get(id).style.display = 'none'; };
     function show(id)       { get(id).style.visibility = null;     };
     function html(id, html) { get(id).innerHTML = html;            };
 
@@ -27,22 +27,19 @@
     // game constants
     //-------------------------------------------------------------------------
 
-    var KEY     = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40 },
+    var KEY     = { ESC: 27, SPACE: 32, LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, M: 77},
         DIR     = { UP: 0, RIGHT: 1, DOWN: 2, LEFT: 3, MIN: 0, MAX: 3 },
         stats   = new Stats(),
         canvas  = get('canvas'),
         ctx     = canvas.getContext('2d'),
-        ucanvas = get('upcoming'),
-        uctx    = ucanvas.getContext('2d'),
+        //ucanvas = get('upcoming'),
+       // uctx    = ucanvas.getContext('2d'),
         speed   = { start: 0.4, decrement: 0, min: 0.4 }, // how long before piece drops by 1 row (seconds)
         nx      = 10, // width of tetris court (in blocks)
         ny      = 20, // height of tetris court (in blocks)
-        nu      = 5, // width/height of upcoming preview (in blocks)
-        level2  = false,
-        level3  = false,
-        level4  = false,
-        level5  = false, // for changing levels and music (added by R. C. Howell)
-        pltt    = ["#1abc9c","#2ecc71","#3498db","#9b59b6","#34495e","#16a085","#27ae60","#2980b9","#8e44ad","#2c3e50","#f1c40f","#e67e22","#e74c3c","#7f8c8d","#f39c12","#d35400","#c0392b"]; // Color array. src flatuicolors.com (added by R. C. Howell)
+        //nu      = 5, // width/height of upcoming preview (in blocks)
+        pltt    = ["#1abc9c","#2ecc71","#3498db","#9b59b6","#34495e","#16a085","#27ae60","#2980b9","#8e44ad","#2c3e50","#f1c40f","#e67e22","#e74c3c","#f39c12","#d35400","#c0392b"], // Color array. src flatuicolors.com (added by R. C. Howell)
+        lose    = false;
 
     //-------------------------------------------------------------------------
     // game variables (initialized during reset)
@@ -59,7 +56,10 @@
         vscore,        // the currently displayed score (it catches up to score in small chunks - like a spinning slot machine)
         rows,          // number of completed rows in the current game
         step,         // how long before current piece drops by 1 row
-        invert = false; // Added by R. C. Howell for when the game flips and keys are reassigned
+        invert = false, // Added by R. C. Howell for when the game flips and keys are reassigned
+        currentLevel = 0,
+        bonus = false,
+        initialPlay = true;
 
     //-------------------------------------------------------------------------
     // tetris pieces
@@ -149,7 +149,6 @@
         last = now;
         requestAnimationFrame(frame, canvas);
       }
-      music();
       resize(); // setup all our sizing information
       reset();  // reset the per-game variables
       frame();  // start the first frame
@@ -169,8 +168,8 @@
     function resize(event) {
       canvas.width   = canvas.clientWidth;  // set canvas logical size equal to its physical size
       canvas.height  = canvas.clientHeight; // (ditto)
-      ucanvas.width  = ucanvas.clientWidth;
-      ucanvas.height = ucanvas.clientHeight;
+      //ucanvas.width  = ucanvas.clientWidth;
+      //ucanvas.height = ucanvas.clientHeight;
       dx = canvas.width  / nx; // pixel size of a single tetris block
       dy = canvas.height / ny; // (ditto)
       invalidate();
@@ -187,6 +186,7 @@
             case KEY.UP:     actions.push(DIR.UP);    handled = true; break;
             case KEY.DOWN:   actions.push(bottomOut());  handled = true; break;
             case KEY.SPACE:    toggleGame();          handled = true; break;
+            case KEY.M:    toggleAudio(); handled = true; break;
           }
         }else{
           switch(ev.keyCode) {
@@ -195,6 +195,7 @@
             case KEY.UP:     actions.push(DIR.UP);    handled = true; break;
             case KEY.DOWN:   actions.push(bottomOut());  handled = true; break;
             case KEY.SPACE:    toggleGame();          handled = true; break;
+            case KEY.M:    toggleAudio(); handled = true; break;
           }
         }
       }
@@ -210,38 +211,47 @@
     // GAME LOGIC
     //-------------------------------------------------------------------------
     function play(){
-      hide('start');
-      //reset();
-      playing = true;
-      bg();
-      html('rows', rows);
-      if(level2){
-        sound2.play();
-      }else if(level3){
-        sound3.play();
-      }else if(level4){
-        sound4.play();
-      }else if(level5){
-        sound5.play();
-      }else{
-        sound1.play();
+      get('ribbon').style.display = 'none';
+      if(!playing){
+        get('rows').style.opacity = "1.0";
+        get('rows-container').className = "";
+        setTimeout(function(){
+          get('rows-container').style.backgroundColor = "rgba(255,255,255,0.3)";
+        },400);
+        hide('menu');
       }
+      //reset();
+      bg();
+      playing = true;
+      html('rows', rows);
+      if(audio){
+        if(!bonus){
+          level.forEach(function(x, index){
+            if(x == 1){
+              musicList[index].fadeIn(1,2000);
+            }
+          })
+        }else{
+          musicList[6].fadeIn(1,2000);
+        }
+      }
+      if(!noColor && initialPlay){
+        var bgColor = color();
+        get('left').style.backgroundColor = bgColor;
+        get('right').style.backgroundColor = bgColor;
+      }
+      initialPlay = false;
     };
     function pause(){
-      show('start');
       setVisualScore();
       playing = false;
-      sound1.pause();
-      sound2.pause();
-      sound3.pause();
-      sound4.pause();
-      sound5.pause();
+      pauseAudio();
       html('rows', 'paused');
     };
     function toggleGame(){
       if(playing){
         pause();
-      }else if(get('rows').html == "Game Over"){
+      }else if(lose){
         reset();
       }else{
         play();
@@ -270,10 +280,14 @@
       setCurrentPiece(next);
       setNextPiece();
       music();
-      level2  = false;
-      level3  = false;
-      level4  = false;
-      level5  = false;
+      level = [1,0,0,0,0];
+      lose = false;
+      get("canvas").setAttribute("class"," ");
+      invert = false;
+      if(!initialPlay){
+        play();
+      }
+      html('highscore','highscore: ' + getCookie("HIGHSCORE"));
     };
 
     function update(idt) {
@@ -333,8 +347,8 @@
         setCurrentPiece(next);
         setNextPiece(randomPiece());
         clearActions();
-        if (occupied(current.type, current.x, current.y, current.dir)) {
-          lose();
+        if (occupied(current.type, current.x, current.y, current.dir)){
+          lost();
         }
       }
     };
@@ -372,7 +386,7 @@
         for(x = 0 ; x < nx ; ++x)
           setBlock(x, y, (y == 0) ? null : getBlock(x, y-1));
       }
-      flip(n);
+      flip();
       bg();
     };
 
@@ -393,7 +407,7 @@
       ctx.strokeStyle = "#fff";
       ctx.translate(0.5, 0.5); // for crisp 1px lines
       drawCourt();
-      drawNext();
+      //drawNext();
       drawScore();
       drawRows();
       ctx.restore();
@@ -417,23 +431,23 @@
       }
     };
 
-    function drawNext() {
-      if (invalid.next) {
-        var padding = (nu - next.type.size) / 2; // half-arsed attempt at centering next piece display
-        uctx.save();
-        uctx.strokeStyle = '#fff';
-        uctx.translate(0.5, 0.5);
-        uctx.clearRect(0, 0, nu*dx, nu*dy);
-        drawPiece(uctx, next.type, padding, padding, next.dir);
-        //uctx.strokeRect(0, 0, nu*dx - 1, nu*dy - 1);
-        uctx.restore();
-        invalid.next = false;
-      }
-    };
+    // function drawNext() {
+    //   if (invalid.next) {
+    //     var padding = (nu - next.type.size) / 2; // half-arsed attempt at centering next piece display
+    //     uctx.save();
+    //     uctx.strokeStyle = '#fff';
+    //     uctx.translate(0.5, 0.5);
+    //     uctx.clearRect(0, 0, nu*dx, nu*dy);
+    //     drawPiece(uctx, next.type, padding, padding, next.dir);
+    //     //uctx.strokeRect(0, 0, nu*dx - 1, nu*dy - 1);
+    //     uctx.restore();
+    //     invalid.next = false;
+    //   }
+    // };
 
     function drawScore() {
       if (invalid.score) {
-        html('score', ("00000" + Math.floor(vscore)).slice(-5));
+        html('score', commas((" " + Math.floor(vscore)).slice(-5)));
         invalid.score = false;
       }
     };
@@ -442,45 +456,7 @@
       if (invalid.rows) {
         html('rows', rows);
         invalid.rows = false;
-        if(rows >= 10 && level2 == false){
-          var color = document.getElementsByClassName('level-fill')[0].style.backgroundColor;
-          get('left').style.backgroundColor = color;
-          get('right').style.backgroundColor = color;
-          sound1.fadeOut(0,500);
-          sound2.play();
-          level2 = true;
-          flash();
-        }else if(rows >= 20 && level3 == false){
-          var color = document.getElementsByClassName('level-fill')[0].style.backgroundColor;
-          get('left').style.backgroundColor = color;
-          get('right').style.backgroundColor = color;
-          sound2.fadeOut(0,500);
-          sound3.play();
-          level2 = false;
-          level3 = true;
-          flash();
-        }else if(rows >= 30 && level4 == false){
-          var color = document.getElementsByClassName('level-fill')[0].style.backgroundColor;
-          get('left').style.backgroundColor = color;
-          get('right').style.backgroundColor = color;
-          sound3.fadeOut(0,500);
-          sound4.play();
-          level3 = false;
-          level4 = true;
-          flash();
-        }else if(rows >= 40 && level5 == false){
-          var color = document.getElementsByClassName('level-fill')[0].style.backgroundColor;
-          get('left').style.backgroundColor = color;
-          get('right').style.backgroundColor = color;
-          sound4.fadeOut(0,500);
-          sound5.play();
-          level4 = false;
-          level5 = true;
-          flash();
-        }else if(rows >= 50){
-          pause();
-        }
-        progressFill();
+        checkLevel();
       }
     };
 
@@ -500,54 +476,101 @@
     // Audio (added by R. C. Howell) using howler.js
     // http://goldfirestudios.com/blog/104/howler.js-Modern-Web-Audio-Javascript-Library
     // =================================================================================
-    function music(){
-      sound1 = new Howl({
-        urls: ['music/gaia-tuvan.mp3']
-      });
-      sound2 = new Howl({
-        urls: ['music/future.mp3']
-      });
-      sound3 = new Howl({
-        urls: ['music/skrillex.mp3']
-      });
-      sound4 = new Howl({
-        urls: ['music/grizmatik.mp3']
-      });
-      sound5 = new Howl({
-        urls: ['music/numanuma.mp3']
-      });
-    }
-    function mute(audio){
+    var audio = true;
+    function toggleAudio(){
       if(audio){
-        sound.mute();
-        get("no-audio").setAttribute("onclick", "mute(false)");
+        audio = false;
+        get('audio-checkbox').setAttribute('src','x.png');
+        pauseAudio();
       }else{
-        sound.unmute();
-        get("no-audio").setAttribute("onclick", "mute(true)");
+        audio = true;
+        get('audio-checkbox').setAttribute('src','check.png');
+        if(!bonus){
+          level.forEach(function(x, index){
+            if(x == 1){
+              musicList[index].fadeIn(1,2000);
+            }
+          })
+        }else{
+          musicList[6].fadeIn(1,2000);
+        }
       }
+    }
+    function music(){
+      musicList = [
+        track1 = new Howl({
+          urls: ['music/tomorrow.mp3']
+        }),
+        track2 = new Howl({
+          urls: ['music/apery.mp3']
+        }),
+        track3 = new Howl({
+          urls: ['music/future.mp3']
+        }),
+        track4 = new Howl({
+          urls: ['music/skrillex.mp3']
+        }),
+        track5 = new Howl({
+          urls: ['music/numanuma.mp3']
+        }),
+        scratch = new Howl({
+          urls: ['music/scratch.mp3'],
+          volume: 0.5
+        }),
+        theme = new Howl({
+          urls: ['music/tetris.mp3'],
+          loop: true
+        })
+      ];
+    }
+    function pauseAudio(){
+      musicList.forEach(function(element){
+        element.pause();
+      });
     }
 
     // =========================================
-    // background color (added by R. C. Howell)
-    // http://www.paulirish.com/2009/random-hex-color-code-snippets/
+    // color (added by R. C. Howell)
     // =========================================
+
+    var noColor = false;
+
     function color(){
-      // var hex = '#'+Math.floor(Math.random()*16777215).toString(16); // The random hex generator is credited to Paul Irish. Thank you!
-      return pltt[Math.floor(Math.random() * 16)];
+      if(noColor){
+        return '#000';
+      }else{
+        return pltt[Math.floor(Math.random() * 15)];
+      }
     }
     function bg(){
-      get("color-overlay").style.backgroundColor = color();
+      if(noColor){
+        get("color-overlay").style.backgroundColor = "#000";
+      }else if(!initialPlay){
+        get("color-overlay").style.backgroundColor = color();
+      }else{
+        get("color-overlay").style.backgroundColor = get('rows-container').style.backgroundColor;
+      }
+    }
+
+    function toggleColor(){
+      if(noColor){
+        get('color-checkbox').setAttribute('src','check.png');
+        noColor = false;
+      }else{
+        get('color-checkbox').setAttribute('src','x.png');
+        noColor = true;
+      }
     }
 
     // ==============================
     // rotate (added by R. C. Howell)
     // ==============================
-    function flip(n){
-      if(get("canvas").style.transform == "rotate(180deg)"){
-        get("canvas").style.transform = "rotate(0deg)";
+    function flip(){
+      if(get("canvas").className == "rotate"){
+        get("canvas").setAttribute("class"," ");
         invert = false;
       }else{
-        get("canvas").style.transform = "rotate(180deg)";
+        get("canvas").className = "rotate";
         invert = true;
       }
     }
@@ -555,57 +578,132 @@
     // ================================================
     // Pause and Lose functions (added by R. C. Howell)
     // ================================================
-    function lose(){
+    function lost(){
       pause();
-      setTimeout(function(){
-        reset();
-      },2000);
+      playing = false;
+      lose = true;
+      setHighscore();
       html('rows','Game Over')
     }
 
     // ===================================================
     // Levels (added by R. C. Howell)
     // ===================================================
-    function progressFill(){
-      var fills = document.getElementsByClassName('level-fill');
-      var bg = color();
-      if(level2){
-        for (var i = 0 ; i < fills.length ; i++ ) {
-          fills[i].style.height =    (rows - 10) * 10 + "vh";
-          fills[i].style.backgroundColor =    bg;
-        }
+
+    level = [1,0,0,0,0]; // instead of true/false I used 1/0 but it works the same
+
+    function fill(){
+      hex = color();
+      if(hex != get('left').style.backgroundColor){
+        var fills = document.getElementsByClassName('level-fill');
+        for(var i = 0 ; i < fills.length ; i++ ){
+          fills[i].style.height = (rows - (currentLevel * 10)) * 10 + "vh";
+          fills[i].style.backgroundColor = hex;
+        };
       }else{
-        for (var i = 0 ; i < fills.length ; i++ ) {
-          fills[i].style.height =    rows * 10 + "vh";
-          fills[i].style.backgroundColor =    bg;
+        fill();
+      }
+    }
+
+    function checkLevel(){
+      currentLevel = Math.floor(rows/10);
+      if(rows >= 50 && !bonus){
+        if(audio){
+          musicList[4].fadeOut(0,500);
+          musicList[5].play();
+          musicList[6].fadeIn(1,2000);
+        }
+        bonus = true;
+      }else if(currentLevel <= rows / 10 && 1 != level[currentLevel] && !bonus){
+        level = [0,0,0,0,0];
+        level[currentLevel] = 1;
+        var bgColor = color();
+        get('left').style.backgroundColor = bgColor;
+        get('right').style.backgroundColor = bgColor;
+        if(currentLevel != 0){
+          if(audio){
+            musicList[currentLevel - 1].fadeOut(0,500);
+            musicList[5].play();
+            musicList[currentLevel].fadeIn(1,2000);
+          }
         }
       }
+      fill();
+    }
+    // ===================================
+    // start menu (added by R. C. Howell)
+    // ===================================
+
+    function menu(){
+      var menuBG = color();
+      var menuArray = document.getElementsByClassName('menu');
+      menuArray[0].style.backgroundColor = menuBG;
+      var checkArray = document.getElementsByClassName('check');
+      var textArray = document.getElementsByClassName('settings-text');
+      for(var i = 0 ; i < checkArray.length ; i++){
+        var hex = get('rows-container').style.backgroundColor;
+        checkArray[i].style.backgroundColor = hex;
+        textArray[i].style.color = hex;
+        textArray[i].style.borderBottom = "4px solid " + hex;
+      };
+      textArray[2].style.color = hex;
+      textArray[2].style.borderBottom = "4px solid " + hex;
     }
 
     // =========================================================================
     // drop the block all the way down to speed up play (added by R. C. Howell)
     // =========================================================================
+
     function bottomOut(){
       for( var p = 0; p <= ny; p++){
         move(DIR.DOWN);
+      }
+      addScore(current.y);
+    }
 
+    // ==================================================
+    // highscores and cookies (added by R. C. Howell)
+    // ==================================================
+
+    function getCookie(cname) {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1);
+            if (c.indexOf(name) != -1) return c.substring(name.length, c.length);
+        }
+        return "";
+    }
+    function setHighscore(){
+      var currentHighscore = getCookie("HIGHSCORE");
+      if(currentHighscore < vscore){
+        var expires = new Date();
+        var hscore = get('score').innerHTML;
+        expires.setFullYear(expires.getFullYear() + 1);
+        document.cookie = "HIGHSCORE=" + vscore + "; expires = " + expires.toGMTString();
       }
     }
 
-    // ======================================================================
-    // Scoreboard flash when you move to a new level (added by R. C. Howell)
-    // ======================================================================
-    function flash(){
-      get('rows-container').style.borderTop = "8px solid #fff";
-      get('rows-container').style.borderBottom = "8px solid #fff";
-      setTimeout(function(){
-        get('rows-container').style.borderTop = "none";
-        get('rows-container').style.borderBottom = "none";
-      }, 1000);
+    // =========================================================================================================================
+    // add commas to numbers
+    // (by R. C. Howell)
+    // http://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+    // ========================================================================================================================
+
+    function commas(x) {
+      return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     }
 
     //-------------------------------------------------------------------------
     // FINALLY, lets run the game
     //-------------------------------------------------------------------------
-
+    if(Number(getCookie("HIGHSCORE").replace(",","")) > 10000){
+      get('ribbon').style.display = 'block';
+    }
+    if(window.innerHeight < 500){
+      get("rows").className = "text-small";
+      console.log("Consider buying a higher resolution display");
+    }
+    menu();
     run();

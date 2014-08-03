@@ -1,36 +1,64 @@
 <!DOCTYPE html> 
 <html>
 <head>
-  <title>Tetris: Rush</title>
+  <title>Flat Tetris</title>
   <meta charset="utf-8">
   <meta name="description" content="Tetris but better">
   <meta name="author" content="R. C. Howell">
   <link rel='icon' type='image/png' href='favicon.png'>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link type="text/css" rel="stylesheet" href="style.css">
-  <link href='http://fonts.googleapis.com/css?family=Lato:100,300,400,700,900' rel='stylesheet' type='text/css'>
+  <link href='http://fonts.googleapis.com/css?family=Roboto:200,300,400,600,900' rel='stylesheet' type='text/css'>
 </head> 
 
-<body> 
-
+<body>
+  <img id="ribbon" src="ribbon.png" title="for having a score over 10,000">
   <div id="tetris">
-    <div id="menu">
+    <!-- <div id="menu-old">
       <p id="start"><a href="javascript:play();">Press Space to Play.</a></p>
       <p><canvas id="upcoming"></canvas></p>
       <p>score <span id="score">00000</span></p>
       <div id="no-audio" onclick="mute(true)"></div>
-    </div>
+    </div> Comment by R. C. Howell. Since I changed the look of the game, I have decided to get rid of a side menu so that the game runs full screen --> 
     <div id="game">
-      <div id="rows-container">
+      <div id="rows-container" class="menu">
+        <section id="menu">
+            <h1>Flat Tetris</h1>
+            <p id="toggle-warning" href="javascript:play();">(click space to play)</p>
+            <ul>
+              <li>
+                <div class="check" onclick="toggleAudio()">
+                  <img id="audio-checkbox" src="check.png" alt="check" title="on">
+                </div>
+                <p class="settings-text">music</p>
+              </li>
+              <li>
+                <div class="check" onclick="toggleColor()">
+                  <img id="color-checkbox" src="check.png" alt="check" title="on">
+                </div>
+                <p class="settings-text">colors</p>
+              </li>
+              <li>
+                <p class="settings-text">about</p>
+              </li>
+            </ul>
+            <img id="controls" src="controls.png">
+            <p id="epilepsy-warning">Warning: If you are epileptical, turn off colors</p>
+        </section>
         <h1 id="rows">start</h1>
       </div>
       <div id="color-overlay" class="overlay"></div>
-      <div id="gradient-overlay" class="overlay"></div>
       <div id="game-style">
         <section id="left">
+          <div class="header">
+            <p id="score"></p>
+          </div>
           <div class="level-fill"></div>
         </section>
         <section id="right">
+          <div class="header">
+            <p id="highscore"></p>
+          </div>
           <div class="level-fill"></div>
         </section>
       </div>
