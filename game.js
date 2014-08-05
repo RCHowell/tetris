@@ -34,7 +34,7 @@
         ctx     = canvas.getContext('2d'),
         //ucanvas = get('upcoming'),
        // uctx    = ucanvas.getContext('2d'),
-        speed   = { start: 0.4, decrement: 0, min: 0.4 }, // how long before piece drops by 1 row (seconds)
+        speed   = { start: 0.4, decrement: 0.005, min: 0.4 }, // how long before piece drops by 1 row (seconds)
         nx      = 10, // width of tetris court (in blocks)
         ny      = 20, // height of tetris court (in blocks)
         //nu      = 5, // width/height of upcoming preview (in blocks)
@@ -213,6 +213,7 @@
     function play(){
       get('ribbon').style.display = 'none';
       if(!playing){
+        hide('pauseBlock');
         get('rows').style.opacity = "1.0";
         get('rows-container').className = "";
         setTimeout(function(){
@@ -247,6 +248,7 @@
       playing = false;
       pauseAudio();
       html('rows', 'paused');
+      get('pauseBlock').style.display = 'block';
     };
     function toggleGame(){
       if(playing){
@@ -279,7 +281,6 @@
       clearScore();
       setCurrentPiece(next);
       setNextPiece();
-      music();
       level = [1,0,0,0,0];
       lose = false;
       get("canvas").setAttribute("class"," ");
@@ -705,5 +706,6 @@
       get("rows").className = "text-small";
       console.log("Consider buying a higher resolution display");
     }
+    music();
     menu();
     run();
