@@ -647,8 +647,8 @@
         textArray[i].style.color = hex;
         textArray[i].style.borderBottom = "4px solid " + hex;
       };
-      textArray[2].style.color = hex;
-      textArray[2].style.borderBottom = "4px solid " + hex;
+      // textArray[2].style.color = hex;
+      // textArray[2].style.borderBottom = "4px solid " + hex;
     }
 
     // =========================================================================
